@@ -86,6 +86,9 @@ public class ListTreeIterator<N extends ListTreeNodeInterface<?, N>>
 	 */
 	public ListTreeIterator(N toIterate) {
 		super(toIterate, false);
+		
+		//The first previous() call returns the element where the iterator starts
+		this.previousNodeCache = toIterate;
 	}
 	
 	
@@ -97,6 +100,9 @@ public class ListTreeIterator<N extends ListTreeNodeInterface<?, N>>
 	 */
 	public ListTreeIterator(N toIterate, boolean subtreeOnly) {
 		super(toIterate, subtreeOnly);
+		
+		//The first previous() call returns the element where the iterator starts
+		this.previousNodeCache = toIterate;
 	}
 
 	
@@ -132,6 +138,11 @@ public class ListTreeIterator<N extends ListTreeNodeInterface<?, N>>
 		//repeatedly
 		if (lastReturned != null && cursorBelowLastReturned) {
 			cursorBelowLastReturned = false;
+			previousNodeCache = null;
+			
+			//The last direction was forward -> start fresh for going backwards
+			iterators.clear();
+			
 			return lastReturned;
 		}
 		
@@ -156,7 +167,8 @@ public class ListTreeIterator<N extends ListTreeNodeInterface<?, N>>
 		}
 		
 		cursorBelowLastReturned = true;
-		return super.next();
+		previousNodeCache = super.next();
+		return previousNodeCache;
 	}
 
 	@Override
@@ -231,9 +243,9 @@ public class ListTreeIterator<N extends ListTreeNodeInterface<?, N>>
 				iterators.addAll(initBranchIterators(lastReturned.getParentNode(), lastReturned.getRootNode()));
 			} else {
 				//Just remove the last iterator. It will continue with the parent iterator
-				iterators.removeLast();
+				iterators.removeLast().next();
 			}
-		} else if (!lastReturned.getPreviousSibling().isLeafNode()) {
+		} else if (! lastReturned.getPreviousSibling().isLeafNode()) {
 			//The previous sibling has children -> continue with last child of that branch
 			
 			ListTreeNodeInterface<?, ?> endNode = lastReturned.getPreviousSibling();
@@ -253,6 +265,9 @@ public class ListTreeIterator<N extends ListTreeNodeInterface<?, N>>
 		//else:
 		//There are no children -> continue with previous sibling
 		
+		if (iterators.size() == 0) {
+			iterators.addAll(initBranchIterators(lastReturned.getParentNode(), lastReturned.getRootNode()));
+		}
 				
 		try {
 			if (peek) {

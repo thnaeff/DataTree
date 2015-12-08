@@ -124,7 +124,7 @@ public class TreeUtil {
 		//Improved functionality with a list tree node (compared to the general getLastLeafNode() method)
 		N lastChildNode = node.getLastChildNode();
 		
-		while (!lastChildNode.isLeafNode()) {
+		while (! lastChildNode.isLeafNode()) {
 			lastChildNode = lastChildNode.getLastChildNode();
 		}
 		
@@ -148,7 +148,7 @@ public class TreeUtil {
 		
 		N lastChildNode = getLastSibling(node.iterator());
 		
-		while (!lastChildNode.isLeafNode()) {
+		while (! lastChildNode.isLeafNode()) {
 			lastChildNode = getLastSibling(lastChildNode.iterator());
 		}
 		

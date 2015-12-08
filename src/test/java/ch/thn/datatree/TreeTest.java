@@ -39,7 +39,7 @@ public class TreeTest {
 		buildKeyValueTree(keySetNode);
 		
 		
-		
+		//Raw types so that the printer works for any node implementation of this library
 		TreeNodePlainTextPrinter printer = new TreeNodePlainTextPrinter();
 		
 		StringBuilder listNodeOut = printer.print(listNode);
@@ -56,8 +56,10 @@ public class TreeTest {
 				+ "│  ├─ Child 2.2" + PlainTextTreePrinter.LINE_SEPARATOR 
 				+ "│  │  ├─ Child 2.2.1" + PlainTextTreePrinter.LINE_SEPARATOR 
 				+ "│  │  └─ Child 2.2.2" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "│  │     └─ Child 2.2.2.1" + PlainTextTreePrinter.LINE_SEPARATOR 
 				+ "│  ├─ Child 2.3" + PlainTextTreePrinter.LINE_SEPARATOR 
 				+ "│  └─ Child 2.4" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "│     └─ Child 2.4.1" + PlainTextTreePrinter.LINE_SEPARATOR
 				+ "├─ Child 3" + PlainTextTreePrinter.LINE_SEPARATOR 
 				+ "│  ├─ Child 3.1" + PlainTextTreePrinter.LINE_SEPARATOR 
 				+ "│  └─ Child 3.2" + PlainTextTreePrinter.LINE_SEPARATOR 
@@ -110,8 +112,10 @@ public class TreeTest {
 		reference.add("Child 2.2");
 		reference.add("Child 2.2.1");
 		reference.add("Child 2.2.2");
+		reference.add("Child 2.2.2.1");
 		reference.add("Child 2.3");
 		reference.add("Child 2.4");
+		reference.add("Child 2.4.1");
 		reference.add("Child 3");
 		reference.add("Child 3.1");
 		reference.add("Child 3.2");
@@ -160,6 +164,9 @@ public class TreeTest {
 		buildKeyValueTree(keyListNode);
 		buildKeyValueTree(keySetNode);
 		
+		//TreeNodePlainTextPrinter<ListTreeNode<String>> printer = new TreeNodePlainTextPrinter<ListTreeNode<String>>();
+		//System.out.println(printer.print(listNode));
+		
 		List<String> reference = new ArrayList<String>();
 		reference.add("Child 4.2");
 		reference.add("Child 4.1");
@@ -167,8 +174,10 @@ public class TreeTest {
 		reference.add("Child 3.2");
 		reference.add("Child 3.1");
 		reference.add("Child 3");
+		reference.add("Child 2.4.1");
 		reference.add("Child 2.4");
 		reference.add("Child 2.3");
+		reference.add("Child 2.2.2.1");
 		reference.add("Child 2.2.2");
 		reference.add("Child 2.2.1");
 		reference.add("Child 2.2");
@@ -191,7 +200,119 @@ public class TreeTest {
 		System.out.println("--- Key list tree ------------------------------------");
 		System.out.println(keyListNodeListBackwards);
 		
+		//Check that all the iterator lists match the reference
+		assertThat(listNodeListBackwards, is(reference));
+		assertThat(keyListNodeListBackwards, is(reference));
+				
+	}
+	
+	@Test
+	public void treeIterationAndNavigation() throws Exception {
 		
+		System.out.println("\n ================= Tree iteration/navigation =====================\n");
+		
+		ListTreeNode<String> listNode = new ListTreeNode<String>("Tree");
+		
+		buildValueTree(listNode);
+		
+		
+		//TreeNodePlainTextPrinter<ListTreeNode<String>> printer = new TreeNodePlainTextPrinter<ListTreeNode<String>>();
+		//System.out.println(printer.print(listNode));
+		
+		
+		List<String> reference = new ArrayList<String>();
+		//Forward iteration
+		reference.add("Tree");
+		reference.add("Child 1");
+		reference.add("Child 1.1");
+		reference.add("Child 1.2");
+		reference.add("Child 2");
+		
+		//Backward iteration
+		reference.add("Child 2");
+		reference.add("Child 1.2");
+		reference.add("Child 1.1");
+		reference.add("Child 1");
+		reference.add("Tree");
+		
+		//Jump to child
+		reference.add("Child 2");
+		
+		//Last leaf node
+		reference.add("Child 2.4.1");
+		
+		//Peek previous
+		reference.add("Child 2.4.1");
+		reference.add("Child 2.4");
+		reference.add("Child 2.4");
+		reference.add("Child 2.4");
+		
+		//Peek next
+		reference.add("Child 2.4");
+		reference.add("Child 2.4.1");
+		reference.add("Child 2.4.1");
+		reference.add("Child 2.4.1");
+		
+		List<String> iterationList = new ArrayList<String>();
+		
+		//Use advanced list iterator
+		ListTreeIterator<ListTreeNode<String>> iterator = listNode.listIterator();
+		
+		try {
+			//Forward iteration
+			iterationList.add(iterator.next().getNodeValue());
+			iterationList.add(iterator.next().getNodeValue());
+			iterationList.add(iterator.next().getNodeValue());
+			iterationList.add(iterator.next().getNodeValue());
+			iterationList.add(iterator.next().getNodeValue());
+						
+			//Backward iteration
+			iterationList.add(iterator.previous().getNodeValue());
+			iterationList.add(iterator.previous().getNodeValue());
+			iterationList.add(iterator.previous().getNodeValue());
+			iterationList.add(iterator.previous().getNodeValue());
+			iterationList.add(iterator.previous().getNodeValue());
+			
+			//Jump to child
+			ListTreeNode<String> child2 = listNode.getChildNode(1);
+			iterationList.add(child2.getNodeValue());
+			
+			//Last leaf node
+			ListTreeNode<String> child241 = (ListTreeNode<String>) TreeUtil.getLastLeafNode(child2);
+			iterationList.add(child241.getNodeValue());
+			
+			iterator = child241.listIterator();
+			
+			//Peek previous
+			//First call to previous returns the current element
+			iterationList.add(iterator.previous().getNodeValue());
+			//Peek to previous now returns the previous element, but does not move the pointer
+			iterationList.add(iterator.peekPrevious().getNodeValue());
+			iterationList.add(iterator.peekPrevious().getNodeValue());
+			iterationList.add(iterator.previous().getNodeValue());
+			
+			//Peek next
+			//First call to next returns the current element
+			iterationList.add(iterator.next().getNodeValue());
+			//Peek to next now returns the next element, but does not move the pointer
+			iterationList.add(iterator.peekNext().getNodeValue());
+			iterationList.add(iterator.peekNext().getNodeValue());
+			iterationList.add(iterator.next().getNodeValue());
+			
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			//Just continue and print what we have
+		}
+		
+		
+		System.out.println("-- Reference iteration -------------------------------------");
+		System.out.println(reference);
+		System.out.println("-- List iteration -------------------------------------");
+		System.out.println(iterationList);
+		
+		//Check that all the iterator lists match the reference
+		assertThat(iterationList, is(reference));
 	}
 	
 	/**
@@ -252,7 +373,8 @@ public class TreeTest {
 		ListTreeIterator<? extends ListTreeNodeInterface<String, ?>> iterator = lastNode.listIterator();
 		
 		while (iterator.hasPrevious()) {
-			list.add(iterator.previous().getNodeValue());
+			String s = iterator.previous().getNodeValue();
+			list.add(s);
 		}
 		
 		return list;
@@ -275,9 +397,11 @@ public class TreeTest {
 			.addChildNode("Child 2.1").getParentNode()
 			.addChildNode("Child 2.2")
 				.addChildNode("Child 2.2.1").getParentNode()
-				.addChildNode("Child 2.2.2").getParentNode().getParentNode()
+				.addChildNode("Child 2.2.2")
+					.addChildNode("Child 2.2.2.1").getParentNode().getParentNode().getParentNode()
 			.addChildNode("Child 2.3").getParentNode()
-			.addChildNode("Child 2.4");
+			.addChildNode("Child 2.4")
+				.addChildNode("Child 2.4.1");
 	
 		headNode.addChildNode("Child 3")
 			.addChildNode("Child 3.1").getParentNode()
@@ -305,9 +429,11 @@ public class TreeTest {
 			.addChildNode("child_21", "Child 2.1").getParentNode()
 			.addChildNode("child_22", "Child 2.2")
 				.addChildNode("child_221", "Child 2.2.1").getParentNode()
-				.addChildNode("child_222", "Child 2.2.2").getParentNode().getParentNode()
+				.addChildNode("child_222", "Child 2.2.2")
+					.addChildNode("child_2221", "Child 2.2.2.1").getParentNode().getParentNode().getParentNode()
 			.addChildNode("child_23", "Child 2.3").getParentNode()
-			.addChildNode("child_24", "Child 2.4");
+			.addChildNode("child_24", "Child 2.4")
+				.addChildNode("child_241", "Child 2.4.1");
 	
 		headNode.addChildNode("child_3", "Child 3")
 			.addChildNode("child_31", "Child 3.1").getParentNode()

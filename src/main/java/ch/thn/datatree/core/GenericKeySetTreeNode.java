@@ -70,6 +70,10 @@ public abstract class GenericKeySetTreeNode<K, V, N extends GenericKeySetTreeNod
 
 				@Override
 				public int compare(K o1, K o2) {
+					if (o1 == null && o2 != null) { return 1; }
+					if (o1 != null && o2 == null) { return -1; }
+					if (o1 == o2) { return 0; }
+					
 					return o1.toString().compareTo(o2.toString());
 				}
 			};
@@ -80,7 +84,15 @@ public abstract class GenericKeySetTreeNode<K, V, N extends GenericKeySetTreeNod
 
 				@Override
 				public int compare(N o1, N o2) {
-					return o1.toString().compareTo(o2.toString());
+					if (o1 == null && o2 != null) { return 1; }
+					if (o1 != null && o2 == null) { return -1; }
+					if (o1 == o2) { return 0; }
+					
+					if (o1.getNodeValue() == null && o2.getNodeValue() != null) { return 1; }
+					if (o1.getNodeValue() != null && o2.getNodeValue() == null) { return -1; }
+					if (o1.getNodeValue() == o2.getNodeValue()) { return 0; }
+					
+					return o1.getNodeValue().toString().compareTo(o2.getNodeValue().toString());
 				}
 			};
 		}

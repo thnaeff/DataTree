@@ -90,7 +90,9 @@ implements Iterator<N> {
 	 * @param subtreeOnly Only iterates through the sub tree of the given start node.
 	 */
 	public GenericTreeIterator(N toIterate, boolean subtreeOnly) {
+		//The first next() call returns the element where the iterator starts
 		this.nextNodeCache = toIterate;
+		
 		this.subtreeOnly = subtreeOnly;
 		this.startNode = toIterate;
 
@@ -170,7 +172,7 @@ implements Iterator<N> {
 			}
 		}
 
-		if (!upwards && !lastReturned.isLeafNode()) {
+		if (! upwards && ! lastReturned.isLeafNode()) {
 			//There are children -> iterate them first
 
 			iterators.addLast(getIterator(lastReturned.getChildNodes()));
@@ -201,23 +203,21 @@ implements Iterator<N> {
 			}
 		}
 
-		N ret = null;
-
 		try {
 			if (peek) {
 				nextNodeCache = iterators.peekLast().next();
-				ret = nextNodeCache;
+				return nextNodeCache;
 			} else {
 				lastReturned = iterators.peekLast().next();
-				ret = lastReturned;
+				return lastReturned;
 			}
 		} catch (NoSuchElementException e) {
 			//Reached the end of the branch
 			iterators.removeLast();
-			return internalNext(peek, true);
+			lastReturned = internalNext(peek, true);
+			return lastReturned;
 		}
-
-		return ret;
+		
 	}
 
 	/**
@@ -232,7 +232,7 @@ implements Iterator<N> {
 	protected LinkedList<I> initBranchIterators(N startNode, N endNode) {
 		LinkedList<I> newIterators = new LinkedList<I>();
 
-		if (!startNode.isRootNode()) {
+		if (! startNode.isRootNode()) {
 			//Initialize all iterators
 			N childNode = startNode;
 			N parentNode = childNode.getParentNode();
@@ -240,8 +240,8 @@ implements Iterator<N> {
 			//Go up from start node to end node
 			do {
 				I childIterator = positionIterator(parentNode.getChildNodes(), childNode);
-
 				newIterators.addFirst(childIterator);
+				
 				childNode = parentNode;
 				parentNode = childNode.getParentNode();
 			} while (parentNode != null && childNode != endNode);
@@ -250,4 +250,9 @@ implements Iterator<N> {
 		return newIterators;
 	}
 
+	
+	@Override
+	public String toString() {
+		return lastReturned.toString();
+	}
 }
