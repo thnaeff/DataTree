@@ -21,7 +21,7 @@ import java.util.Comparator;
 
 import com.google.common.collect.TreeMultimap;
 
-import ch.thn.datatree.TreeUtil;
+import ch.thn.datatree.DataTreeUtil;
 
 
 /**
@@ -70,11 +70,11 @@ public abstract class GenericKeySetTreeNode<K, V, N extends GenericKeySetTreeNod
 		super(null, key, value);
 		
 		if (keyComparator == null) {
-			keyComparator = TreeUtil.<K>getDefaultKeyComparator();
+			keyComparator = DataTreeUtil.<K>getDefaultKeyComparator();
 		}
 		
 		if (valueComparator == null) {
-			valueComparator = TreeUtil.<N>getDefaultValueComparator();
+			valueComparator = DataTreeUtil.<N>getDefaultValueComparator();
 		}
 		
 		this.keyComparator = keyComparator;

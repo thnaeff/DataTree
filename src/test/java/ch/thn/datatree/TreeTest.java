@@ -278,7 +278,7 @@ public class TreeTest {
 			iterationList.add(child2.getNodeValue());
 			
 			//Last leaf node
-			ListTreeNode<String> child241 = (ListTreeNode<String>) TreeUtil.getLastLeafNode(child2);
+			ListTreeNode<String> child241 = (ListTreeNode<String>) DataTreeUtil.getLastLeafNode(child2);
 			iterationList.add(child241.getNodeValue());
 			
 			iterator = child241.listIterator();
@@ -367,7 +367,7 @@ public class TreeTest {
 		
 		List<String> list = new ArrayList<String>();
 		
-		ListTreeNodeInterface<String, ?> lastNode = TreeUtil.getLastLeafNode(headNode);
+		ListTreeNodeInterface<String, ?> lastNode = DataTreeUtil.getLastLeafNode(headNode);
 		
 		//Use advanced list iterator
 		ListTreeIterator<? extends ListTreeNodeInterface<String, ?>> iterator = lastNode.listIterator();
@@ -387,7 +387,7 @@ public class TreeTest {
 	 * 
 	 * @param headNode
 	 */
-	private void buildValueTree(CollectionTreeNodeInterface<String, ?> headNode) {
+	public static void buildValueTree(CollectionTreeNodeInterface<String, ?> headNode) {
 		
 		headNode.addChildNode("Child 1")
 			.addChildNode("Child 1.1").getParentNode()
@@ -419,7 +419,7 @@ public class TreeTest {
 	 * 
 	 * @param headNode
 	 */
-	private void buildKeyValueTree(MapTreeNodeInterface<String, String, ?> headNode) {
+	public static void buildKeyValueTree(MapTreeNodeInterface<String, String, ?> headNode) {
 		
 		headNode.addChildNode("child_1", "Child 1")
 			.addChildNode("child_11", "Child 1.1").getParentNode()

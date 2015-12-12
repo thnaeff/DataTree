@@ -28,7 +28,7 @@ import ch.thn.datatree.core.ListTreeNodeInterface;
  * @author Thomas Naeff (github.com/thnaeff)
  *
  */
-public class TreeUtil {
+public class DataTreeUtil {
 	
 	/**
 	 * Creates a comparator which compares the toString output of parameters of type K 
@@ -80,15 +80,24 @@ public class TreeUtil {
 	 * @param node
 	 * @return
 	 */
-	public static <N extends CollectionTreeNodeInterface<?, N>> N copyTree(N node) {
-		
-		N newNode = node.nodeFactory(node);
-		
-		TreeUtil.copyTreeChildNodes(newNode, node);
-		
-		return newNode;
+	public static <N extends CollectionTreeNodeInterface<?, N>> N copyTree(N node) {	
+		return copyTree(node, null);
 	}
 	
+	/**
+	 * Makes a copy of the whole tree, starting at the given node.
+	 * If the creation of node instances has to be controlled, a node factory can be provided for that purpose.
+	 * 
+	 * @param node
+	 * @param nodeFactory
+	 * @return
+	 */
+	public static <N extends CollectionTreeNodeInterface<?, N>> N copyTree(N node, 
+			DataTreeCopyNodeFactory<N> nodeFactory) {	
+		N newNode = node.nodeFactory(node);
+		DataTreeUtil.copyTreeChildNodes(newNode, node, nodeFactory);
+		return newNode;
+	}
 	
 	/**
 	 * 
@@ -96,25 +105,26 @@ public class TreeUtil {
 	 * @param targetNode
 	 * @param sourceNode
 	 */
-	private static <N extends CollectionTreeNodeInterface<?, N>> void copyTreeChildNodes(
-			N targetNode, N sourceNode) {
+	private static <N extends CollectionTreeNodeInterface<?, N>> void copyTreeChildNodes(N targetNode, 
+			N sourceNode, DataTreeCopyNodeFactory<N> nodeFactory) {
 				
 		if (sourceNode.isLeafNode()) {
 			//Skip if there are no child nodes
 			return;
 		}
-		
-		Iterator<N> childNodesIterator = sourceNode.getChildNodes().iterator();
-		
-		while (childNodesIterator.hasNext()) {
-			
-			N sourceChildNode = childNodesIterator.next();
-						
+				
+		for (N sourceChildNode : sourceNode.getChildNodes()) {
 			//Add a new child node with the data of the source child node
-			N newTargetChildNode = targetNode.addChildNodeCopy(sourceChildNode);
+			N newTargetChildNode = null;
+			if (nodeFactory == null) {
+				newTargetChildNode = targetNode.addChildNodeCopy(sourceChildNode);
+			} else {
+				newTargetChildNode = nodeFactory.newInstanceCopy(sourceChildNode);
+				targetNode.addChildNode(newTargetChildNode);
+			}
 			
 			//Add all children of the source child node to the new child node
-			TreeUtil.copyTreeChildNodes(newTargetChildNode, sourceChildNode);			
+			DataTreeUtil.copyTreeChildNodes(newTargetChildNode, sourceChildNode, nodeFactory);			
 			
 		}
 		
@@ -213,6 +223,27 @@ public class TreeUtil {
 		}
 		
 		return lastSibling;
+	}
+	
+	
+	
+	/**********************************************************************************************************
+	 * 
+	 * 
+	 * @author Thomas Naeff (github.com/thnaeff)
+	 *
+	 * @param <N>
+	 */
+	public interface DataTreeCopyNodeFactory<N> {
+		
+		/**
+		 * Creates a new instance of a tree node and copies needed data
+		 * 
+		 * @param node
+		 * @return
+		 */
+		public N newInstanceCopy(N node);
+
 	}
 
 }

@@ -250,7 +250,7 @@ public class ListTreeIterator<N extends ListTreeNodeInterface<?, N>>
 			
 			ListTreeNodeInterface<?, ?> endNode = lastReturned.getPreviousSibling();
 			@SuppressWarnings("unchecked")
-			N startNode = (N)TreeUtil.getLastLeafNode(endNode);
+			N startNode = (N)DataTreeUtil.getLastLeafNode(endNode);
 			
 			//Some type juggling...
 			@SuppressWarnings("unchecked")

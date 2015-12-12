@@ -1,7 +1,6 @@
 package ch.thn.datatree;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -11,8 +10,68 @@ import ch.thn.datatree.printer.generic.PlainTextTreePrinter;
 
 public class TreeTest2 {
 
+	
 	@Test
-	public void testMultiKey() throws Exception {
+	public void testUtilTreeCopy() throws Exception {
+		System.out.println("\n ================= Tree copy =====================\n");
+		
+		KeyListTreeNode<String, String> keyListNodeReference = new KeyListTreeNode<String, String>("", "Tree");
+		
+		TreeTest.buildValueTree(keyListNodeReference);
+		
+		KeyListTreeNode<String, String> keyListNodeCopy = DataTreeUtil.copyTree(keyListNodeReference);
+		
+		TreeNodePlainTextPrinter printer = new TreeNodePlainTextPrinter();
+		
+		StringBuilder keyListNodeReferenceOut = printer.print(keyListNodeReference);
+		StringBuilder keyListNodeCopyOut = printer.print(keyListNodeCopy);
+		
+		
+		System.out.println("-- Key list tree reference -------------------------------------");
+		System.out.println(keyListNodeReferenceOut);
+		System.out.println("-- Key list tree copy -------------------------------------");
+		System.out.println(keyListNodeCopyOut);
+		
+		//Check that the printed copy matches the printed reference
+		assertThat(keyListNodeCopyOut.toString(), is(equalTo(keyListNodeReferenceOut.toString())));
+		
+	}
+	
+	@Test
+	public void testCustomTreeCopy() throws Exception {
+		
+		System.out.println("\n ================= Tree copy custom tree =====================\n");
+
+		
+		MyOwnTree keyListNodeReference = new MyOwnTree("", "Tree");
+		
+		TreeTest.buildValueTree(keyListNodeReference);
+		
+		//See javadoc of MyOwnTree for information about the advantages of creating a simple tree implementation 
+		//which extends the generic tree type rather than extending a tree implementation
+		MyOwnTree keyListNodeCopy = DataTreeUtil.copyTree(keyListNodeReference);
+		
+		TreeNodePlainTextPrinter printer = new TreeNodePlainTextPrinter();
+		
+		StringBuilder keyListNodeReferenceOut = printer.print(keyListNodeReference);
+		StringBuilder keyListNodeCopyOut = printer.print(keyListNodeCopy);
+		
+		
+		System.out.println("-- Key list tree reference -------------------------------------");
+		System.out.println(keyListNodeReferenceOut);
+		System.out.println("-- Key list tree copy -------------------------------------");
+		System.out.println(keyListNodeCopyOut);
+		
+		//Check that the printed copy matches the printed reference
+		assertThat(keyListNodeCopyOut.toString(), is(equalTo(keyListNodeReferenceOut.toString())));
+		
+	}
+	
+	
+	@Test
+	public void multiKeyTest() throws Exception {
+		
+		System.out.println("\n ================= multiple keys =====================\n");
 		
 		KeyListTreeNode<String, String> keyListNode = new KeyListTreeNode<String, String>("", "Tree");
 		KeySetTreeNode<String, String> keySetNode = new KeySetTreeNode<String, String>("", "Tree");
@@ -54,8 +113,7 @@ public class TreeTest2 {
 		assertThat(keySetNodeOut.toString(), is(equalTo(reference)));
 		
 	}
-	
-	
+
 	
 	
 }
