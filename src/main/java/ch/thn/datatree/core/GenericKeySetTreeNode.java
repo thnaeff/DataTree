@@ -21,6 +21,8 @@ import java.util.Comparator;
 
 import com.google.common.collect.TreeMultimap;
 
+import ch.thn.datatree.TreeUtil;
+
 
 /**
  * 
@@ -52,12 +54,14 @@ public abstract class GenericKeySetTreeNode<K, V, N extends GenericKeySetTreeNod
 	
 	/**
 	 * Creates a new key set tree node which uses the given comparator to sort the 
-	 * key and nodes.
+	 * key and nodes. The comparators are also used to check for equality, which means 
+	 * that since this is a set, a new entry is not added if an equal one is already 
+	 * present. An entry is equal when both the key and the value comparison is equal.
 	 * 
 	 * @param keyComparator The comparator to use, or <code>null</code> to use an 
-	 * internally created comparator which compares the toString result of two nodes.
+	 * internally created comparator which compares the toString result of two node keys.
 	 * @param valueComparator The comparator to use, or <code>null</code> to use an 
-	 * internally created comparator which compares the toString result of two nodes.
+	 * internally created comparator which compares the toString result of two node values.
 	 * @param key
 	 * @param value
 	 */
@@ -66,35 +70,11 @@ public abstract class GenericKeySetTreeNode<K, V, N extends GenericKeySetTreeNod
 		super(null, key, value);
 		
 		if (keyComparator == null) {
-			keyComparator = new Comparator<K>() {
-
-				@Override
-				public int compare(K o1, K o2) {
-					if (o1 == null && o2 != null) { return 1; }
-					if (o1 != null && o2 == null) { return -1; }
-					if (o1 == o2) { return 0; }
-					
-					return o1.toString().compareTo(o2.toString());
-				}
-			};
+			keyComparator = TreeUtil.<K>getDefaultKeyComparator();
 		}
 		
 		if (valueComparator == null) {
-			valueComparator = new Comparator<N>() {
-
-				@Override
-				public int compare(N o1, N o2) {
-					if (o1 == null && o2 != null) { return 1; }
-					if (o1 != null && o2 == null) { return -1; }
-					if (o1 == o2) { return 0; }
-					
-					if (o1.getNodeValue() == null && o2.getNodeValue() != null) { return 1; }
-					if (o1.getNodeValue() != null && o2.getNodeValue() == null) { return -1; }
-					if (o1.getNodeValue() == o2.getNodeValue()) { return 0; }
-					
-					return o1.getNodeValue().toString().compareTo(o2.getNodeValue().toString());
-				}
-			};
+			valueComparator = TreeUtil.<N>getDefaultValueComparator();
 		}
 		
 		this.keyComparator = keyComparator;

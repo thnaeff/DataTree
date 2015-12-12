@@ -16,9 +16,11 @@
  */
 package ch.thn.datatree;
 
+import java.util.Comparator;
 import java.util.Iterator;
 
 import ch.thn.datatree.core.CollectionTreeNodeInterface;
+import ch.thn.datatree.core.GenericKeySetTreeNode;
 import ch.thn.datatree.core.ListTreeNodeInterface;
 
 /**
@@ -27,6 +29,49 @@ import ch.thn.datatree.core.ListTreeNodeInterface;
  *
  */
 public class TreeUtil {
+	
+	/**
+	 * Creates a comparator which compares the toString output of parameters of type K 
+	 * 
+	 * @return
+	 */
+	public static <K> Comparator<K> getDefaultKeyComparator() {
+		return new Comparator<K>() {
+
+			@Override
+			public int compare(K o1, K o2) {
+				if (o1 == null && o2 != null) { return 1; }
+				if (o1 != null && o2 == null) { return -1; }
+				if (o1 == o2) { return 0; }
+				
+				return o1.toString().compareTo(o2.toString());
+			}
+		};
+	}
+	
+	/**
+	 * Creates a comparator which compares the toString output of the tree node 
+	 * value of type N 
+	 * 
+	 * @return
+	 */
+	public static <N extends GenericKeySetTreeNode<?, ?, N>> Comparator<N> getDefaultValueComparator() {
+		return new Comparator<N>() {
+
+			@Override
+			public int compare(N o1, N o2) {
+				if (o1 == null && o2 != null) { return 1; }
+				if (o1 != null && o2 == null) { return -1; }
+				if (o1 == o2) { return 0; }
+				
+				if (o1.getNodeValue() == null && o2.getNodeValue() != null) { return 1; }
+				if (o1.getNodeValue() != null && o2.getNodeValue() == null) { return -1; }
+				if (o1.getNodeValue() == o2.getNodeValue()) { return 0; }
+				
+				return o1.getNodeValue().toString().compareTo(o2.getNodeValue().toString());
+			}
+		};
+	}
 	
 	
 	/**
