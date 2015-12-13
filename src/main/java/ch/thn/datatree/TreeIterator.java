@@ -44,6 +44,7 @@ public class TreeIterator<N extends CollectionTreeNodeInterface<?, N>>
 	 * @param toIterate
 	 */
 	public TreeIterator(N toIterate) {
+		//Only iterating over the sub tree possible
 		super(toIterate, true);
 	}
 	

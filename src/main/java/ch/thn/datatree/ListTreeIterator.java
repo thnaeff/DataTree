@@ -80,12 +80,12 @@ public class ListTreeIterator<N extends ListTreeNodeInterface<?, N>>
 	
 	
 	/**
-	 * 
+	 * Iterates over the sub tree by default
 	 * 
 	 * @param toIterate
 	 */
 	public ListTreeIterator(N toIterate) {
-		super(toIterate, false);
+		super(toIterate, true);
 		
 		//The first previous() call returns the element where the iterator starts
 		this.previousNodeCache = toIterate;

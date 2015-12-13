@@ -256,7 +256,7 @@ public class TreeTest {
 		List<String> iterationList = new ArrayList<String>();
 		
 		//Use advanced list iterator
-		ListTreeIterator<ListTreeNode<String>> iterator = listNode.listIterator();
+		ListTreeIterator<ListTreeNode<String>> iterator = listNode.listIterator(false);
 		
 		try {
 			//Forward iteration
@@ -281,7 +281,7 @@ public class TreeTest {
 			ListTreeNode<String> child241 = (ListTreeNode<String>) DataTreeUtil.getLastLeafNode(child2);
 			iterationList.add(child241.getNodeValue());
 			
-			iterator = child241.listIterator();
+			iterator = child241.listIterator(false);
 			
 			//Peek previous
 			//First call to previous returns the current element
@@ -370,7 +370,7 @@ public class TreeTest {
 		ListTreeNodeInterface<String, ?> lastNode = DataTreeUtil.getLastLeafNode(headNode);
 		
 		//Use advanced list iterator
-		ListTreeIterator<? extends ListTreeNodeInterface<String, ?>> iterator = lastNode.listIterator();
+		ListTreeIterator<? extends ListTreeNodeInterface<String, ?>> iterator = lastNode.listIterator(false);
 		
 		while (iterator.hasPrevious()) {
 			String s = iterator.previous().getNodeValue();

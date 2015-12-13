@@ -200,7 +200,7 @@ implements CollectionTreeNodeInterface<V, N>, Iterable<N>  {
 
 	@Override
 	public N addChildNodeCopy(N node) {
-		return addChildNode(nodeFactory(node));
+		return addChildNode(node.nodeFactory(node));
 	}
 
 	@Override
@@ -423,7 +423,7 @@ implements CollectionTreeNodeInterface<V, N>, Iterable<N>  {
 
 	@Override
 	public TreeIterator<N> iterator(boolean subtreeOnly) {
-		throw new UnsupportedOperationException("Collection/Set trees can only be iterated through the sub tree of the current node.");
+		throw new UnsupportedOperationException("This tree implementation does not support the iteration over the subtree only");
 	}
 
 	@Override

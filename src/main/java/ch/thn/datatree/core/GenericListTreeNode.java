@@ -66,7 +66,7 @@ implements ListTreeNodeInterface<V, N> {
 
 	@Override
 	public N addChildNodeCopyAt(int index, N node) {
-		return addChildNodeAt(index, nodeFactory(node.getNodeValue()));
+		return addChildNodeAt(index, node.nodeFactory(node));
 	}
 
 	@Override

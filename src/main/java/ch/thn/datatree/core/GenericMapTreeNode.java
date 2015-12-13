@@ -164,7 +164,7 @@ implements MapTreeNodeInterface<K, V, N> {
 
 	@Override
 	public N addChildNodeCopy(N node) {
-		return internalAddChildNode(nodeFactory(node), true);
+		return internalAddChildNode(node.nodeFactory(node), true);
 	}
 
 	@Override
