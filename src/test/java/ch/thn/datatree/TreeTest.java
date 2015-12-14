@@ -315,6 +315,164 @@ public class TreeTest {
 		assertThat(iterationList, is(reference));
 	}
 	
+	@Test
+	public void treeIntersectFull() throws Exception {
+		
+		System.out.println("\n ================= Tree intersect full (tree copy) =====================\n");
+		
+		ListTreeNode<String> listNode = new ListTreeNode<String>("Tree");
+		SetTreeNode<String> setNode = new SetTreeNode<String>("Tree");
+		KeyListTreeNode<String, String> keyListNode = new KeyListTreeNode<String, String>("", "Tree");
+		KeySetTreeNode<String, String> keySetNode = new KeySetTreeNode<String, String>("", "Tree");
+		
+		buildValueTree(listNode);
+		buildValueTree(setNode);
+		buildKeyValueTree(keyListNode);
+		buildKeyValueTree(keySetNode);
+		
+		
+		//Raw types so that the printer works for any node implementation of this library
+		TreeNodePlainTextPrinter printer = new TreeNodePlainTextPrinter();
+		
+		TestIntersectComparator comparator = new TestIntersectComparator();
+		
+		//Build the intersect of the tree with itself. Testing if the whole tree ends up as intersect.
+		//This creates a copy of the tree, but it is less efficient as using the DataTreeUtil.copyTree.
+		StringBuilder listNodeOut = printer.print(DataTreeUtil.intersect(listNode, listNode, comparator));
+		StringBuilder setNodeOut = printer.print(DataTreeUtil.intersect(setNode, setNode, comparator));
+		StringBuilder keyListNodeOut = printer.print(DataTreeUtil.intersect(keyListNode, keyListNode, comparator));
+		StringBuilder keySetNodeOut = printer.print(DataTreeUtil.intersect(keySetNode, keySetNode, comparator));
+		
+		String reference = "Tree" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "├─ Child 1" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "│  ├─ Child 1.1" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "│  └─ Child 1.2" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "├─ Child 2" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "│  ├─ Child 2.1" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "│  ├─ Child 2.2" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "│  │  ├─ Child 2.2.1" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "│  │  └─ Child 2.2.2" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "│  │     └─ Child 2.2.2.1" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "│  ├─ Child 2.3" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "│  └─ Child 2.4" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "│     └─ Child 2.4.1" + PlainTextTreePrinter.LINE_SEPARATOR
+				+ "├─ Child 3" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "│  ├─ Child 3.1" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "│  └─ Child 3.2" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "└─ Child 4" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "   └─ Child 4.1" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "      └─ Child 4.2" + PlainTextTreePrinter.LINE_SEPARATOR;
+		
+		
+		System.out.println("-- Reference tree -------------------------------------");
+		System.out.println(reference);
+		System.out.println("-- Intersect List tree -------------------------------------");
+		System.out.println(listNodeOut);
+		System.out.println("--- Intersect Set tree ------------------------------------");
+		System.out.println(setNodeOut);
+		System.out.println("--- Intersect Key list tree ------------------------------------");
+		System.out.println(keyListNodeOut);
+		System.out.println("--- Intersect Key set tree ------------------------------------");
+		System.out.println(keySetNodeOut);
+		
+		
+		//Check that all the printed trees match the reference
+		assertThat(listNodeOut.toString(), is(equalTo(reference)));
+		assertThat(setNodeOut.toString(), is(equalTo(reference)));
+		assertThat(keyListNodeOut.toString(), is(equalTo(reference)));
+		assertThat(keySetNodeOut.toString(), is(equalTo(reference)));
+		
+	}
+	
+	@Test
+	public void treeIntersect() throws Exception {
+		
+		System.out.println("\n ================= Tree intersect =====================\n");
+		
+		ListTreeNode<String> listNode = new ListTreeNode<String>("Tree");
+		SetTreeNode<String> setNode = new SetTreeNode<String>("Tree");
+		KeyListTreeNode<String, String> keyListNode = new KeyListTreeNode<String, String>("", "Tree");
+		KeySetTreeNode<String, String> keySetNode = new KeySetTreeNode<String, String>("", "Tree");
+		
+		ListTreeNode<String> listNodeSlave = new ListTreeNode<String>("Tree");
+		SetTreeNode<String> setNodeSlave = new SetTreeNode<String>("Tree");
+		KeyListTreeNode<String, String> keyListNodeSlave = new KeyListTreeNode<String, String>("", "Tree");
+		KeySetTreeNode<String, String> keySetNodeSlave = new KeySetTreeNode<String, String>("", "Tree");
+		
+		buildValueTree(listNode);
+		buildValueTree(setNode);
+		buildKeyValueTree(keyListNode);
+		buildKeyValueTree(keySetNode);
+		
+		buildValueTreeIntersectSlave(listNodeSlave);
+		buildValueTreeIntersectSlave(setNodeSlave);
+		buildKeyValueTreeIntersectSlave(keyListNodeSlave);
+		buildKeyValueTreeIntersectSlave(keySetNodeSlave);
+		
+		
+		//Raw types so that the printer works for any node implementation of this library
+		TreeNodePlainTextPrinter printer = new TreeNodePlainTextPrinter();
+		
+		
+		System.out.println("++ Master tree (list tree) ++++++++++++++++++++++++++++++++++++");
+		System.out.println(printer.print(listNode));
+		System.out.println("++ Slave tree (list tree) +++++++++++++++++++++++++++++++++++++");
+		System.out.println(printer.print(listNodeSlave));
+		
+		
+		TestIntersectComparator comparator = new TestIntersectComparator();
+		
+		StringBuilder listNodeOut = printer.print(DataTreeUtil.intersect(listNode, listNodeSlave, comparator));
+		StringBuilder setNodeOut = printer.print(DataTreeUtil.intersect(setNode, setNodeSlave, comparator));
+		StringBuilder keyListNodeOut = printer.print(DataTreeUtil.intersect(keyListNode, keyListNodeSlave, comparator));
+		StringBuilder keySetNodeOut = printer.print(DataTreeUtil.intersect(keySetNode, keySetNodeSlave, comparator));
+		
+		String reference = "Tree" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "├─ Child 1" + PlainTextTreePrinter.LINE_SEPARATOR 
+				//+ "│  ├─ Child 1.1" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "│  └─ Child 1.2" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "├─ Child 2" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "│  ├─ Child 2.1" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "│  ├─ Child 2.2" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "│  │  ├─ Child 2.2.1" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "│  │  └─ Child 2.2.2" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "│  │     └─ Child 2.2.2.1" + PlainTextTreePrinter.LINE_SEPARATOR 
+				//+ "│  ├─ Child 2.3" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "│  └─ Child 2.4" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "│     └─ Child 2.4.1" + PlainTextTreePrinter.LINE_SEPARATOR
+				//+ "├─ Child 3" + PlainTextTreePrinter.LINE_SEPARATOR 
+				//+ "│  ├─ Child 3.1" + PlainTextTreePrinter.LINE_SEPARATOR 
+				//+ "│  └─ Child 3.2" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "└─ Child 4" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "   └─ Child 4.1" + PlainTextTreePrinter.LINE_SEPARATOR;
+				//+ "      └─ Child 4.2" + PlainTextTreePrinter.LINE_SEPARATOR;
+		
+		
+		
+		
+		
+		
+		System.out.println("-- Intersect Reference tree -------------------------------------");
+		System.out.println(reference);
+		System.out.println("-- Intersect List tree -------------------------------------");
+		System.out.println(listNodeOut);
+		System.out.println("--- Intersect Set tree ------------------------------------");
+		System.out.println(setNodeOut);
+		System.out.println("--- Intersect Key list tree ------------------------------------");
+		System.out.println(keyListNodeOut);
+		System.out.println("--- Intersect Key set tree ------------------------------------");
+		System.out.println(keySetNodeOut);
+		
+		
+		//Check that all the printed trees match the reference
+		assertThat(listNodeOut.toString(), is(equalTo(reference)));
+		/*assertThat(setNodeOut.toString(), is(equalTo(reference)));
+		assertThat(keyListNodeOut.toString(), is(equalTo(reference)));
+		assertThat(keySetNodeOut.toString(), is(equalTo(reference)));
+		*/
+	}
+	
+	
 	/**
 	 * 
 	 * 
@@ -413,6 +571,38 @@ public class TreeTest {
 		
 		
 	}
+	
+	/**
+	 * 
+	 * 
+	 * @param headNode
+	 */
+	public static void buildValueTreeIntersectSlave(CollectionTreeNodeInterface<String, ?> headNode) {
+		
+		headNode.addChildNode("Child 1")
+			.addChildNode("Child 1.1XXX").getParentNode()
+			.addChildNode("Child 1.2");
+	
+		headNode.addChildNode("Child 2")
+			.addChildNode("Child 2.1").getParentNode()
+			.addChildNode("Child 2.2")
+				.addChildNode("Child 2.2.1").getParentNode()
+				.addChildNode("Child 2.2.2")
+					.addChildNode("Child 2.2.2.1").getParentNode().getParentNode().getParentNode()
+			.addChildNode("Child 2.3XXX").getParentNode()
+			.addChildNode("Child 2.4")
+				.addChildNode("Child 2.4.1");
+	
+		headNode.addChildNode("Child 3XXX")
+			.addChildNode("Child 3.1").getParentNode()
+			.addChildNode("Child 3.2");
+	
+		headNode.addChildNode("Child 4")
+			.addChildNode("Child 4.1")
+			.addChildNode("Child 4.2XXX");
+		
+		
+	}
 
 	/**
 	 * 
@@ -446,5 +636,37 @@ public class TreeTest {
 		
 	}
 	
+	
+	/**
+	 * 
+	 * 
+	 * @param headNode
+	 */
+	public static void buildKeyValueTreeIntersectSlave(MapTreeNodeInterface<String, String, ?> headNode) {
+		
+		headNode.addChildNode("child_1", "Child 1")
+			.addChildNode("child_11XXX", "Child 1.1XXX").getParentNode()
+			.addChildNode("child_12", "Child 1.2");
+	
+		headNode.addChildNode("child_2", "Child 2")
+			.addChildNode("child_21", "Child 2.1").getParentNode()
+			.addChildNode("child_22", "Child 2.2")
+				.addChildNode("child_221", "Child 2.2.1").getParentNode()
+				.addChildNode("child_222", "Child 2.2.2")
+					.addChildNode("child_2221", "Child 2.2.2.1").getParentNode().getParentNode().getParentNode()
+			.addChildNode("child_23XXX", "Child 2.3XXX").getParentNode()
+			.addChildNode("child_24", "Child 2.4")
+				.addChildNode("child_241", "Child 2.4.1");
+	
+		headNode.addChildNode("child_3XXX", "Child 3XXX")
+			.addChildNode("child_31", "Child 3.1").getParentNode()
+			.addChildNode("child_32", "Child 3.2");
+	
+		headNode.addChildNode("child_4", "Child 4")
+			.addChildNode("child_41", "Child 4.1")
+			.addChildNode("child_42XXX", "Child 4.2XXX");
+		
+		
+	}
 
 }

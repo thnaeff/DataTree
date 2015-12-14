@@ -152,7 +152,7 @@ extends Iterable<N> {
 	public N addChildNode(V value);
 
 	/**
-	 * Removes this node. The root node can not be removed.
+	 * Removes this node from its parent. Any child nodes stay attached to this node.
 	 * 
 	 * @return
 	 */

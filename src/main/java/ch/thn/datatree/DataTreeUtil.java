@@ -16,6 +16,7 @@
  */
 package ch.thn.datatree;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 
@@ -126,6 +127,71 @@ public class DataTreeUtil {
 			//Add all children of the source child node to the new child node
 			DataTreeUtil.copyTreeChildNodes(newTargetChildNode, sourceChildNode, nodeFactory);			
 			
+		}
+		
+	}
+	
+	/**
+	 * Builds the intersect of two trees. 
+	 * The given {@link TreeIntersectComparator} does the comparison between two nodes and decides if they are equal 
+	 * or not. 
+	 * The resulting tree is a copy of the master tree (using the node factory methods of the master tree)
+	 * 
+	 * @param masterNode
+	 * @param slaveNode
+	 * @param walker
+	 * @return
+	 */
+	public static <N extends CollectionTreeNodeInterface<?, N>> N intersect(N masterNode, N slaveNode, 
+			TreeIntersectComparator<N> walker) {
+		
+		if (walker.compare(masterNode, slaveNode) != 0) {
+			//The head nodes are already not equal.
+			return null;
+		}
+		
+		N intersectTree = masterNode.nodeFactory(masterNode);
+		
+		intersectChildren(masterNode, slaveNode, walker, intersectTree);
+		
+		return intersectTree;
+	}
+	
+	/**
+	 * 
+	 * 
+	 * @param masterNode
+	 * @param slaveNode
+	 * @param walker
+	 * @param intersectTree
+	 */
+	private static <K, N extends CollectionTreeNodeInterface<?, N>> void intersectChildren(N masterNode, N slaveNode, 
+			TreeIntersectComparator<N> walker, N intersectTree) {
+		
+		Collection<N> masterChildNodes = masterNode.getChildNodes();
+		Collection<N> slaveChildNodes = slaveNode.getChildNodes();
+		
+		Collection<N> intersectChildNodes = intersectTree.getChildNodes();
+		
+		//Compare each master node to each child node
+		for (N masterChildNode : masterChildNodes) {
+			for (N slaveChildNode : slaveChildNodes) {
+				if (walker.compare(masterChildNode, slaveChildNode) == 0) {
+					boolean alreadyAdded = false;
+					//Only add the matching child node if not added yet
+					for (N intersectChildNode : intersectChildNodes) {
+						if (walker.compare(masterChildNode, intersectChildNode) == 0) {
+							alreadyAdded = true;
+							break;
+						}
+					}
+					
+					if (! alreadyAdded) {
+						N intersectChildTree = intersectTree.addChildNode(masterChildNode.nodeFactory(masterChildNode));
+						intersectChildren(masterChildNode, slaveChildNode, walker, intersectChildTree);
+					}
+				}
+			}
 		}
 		
 	}
@@ -244,6 +310,26 @@ public class DataTreeUtil {
 		 */
 		public N newInstanceCopy(N node);
 
+	}
+	
+	/***********************************************************************************************************
+	 * 
+	 * 
+	 * 
+	 * @author Thomas Naeff (github.com/thnaeff)
+	 *
+	 * @param <N>
+	 */
+	public interface TreeIntersectComparator<N extends CollectionTreeNodeInterface<?, N>> extends Comparator<N> {
+		
+		/**
+		 * Compares the master node to a slave node. If they are equal (return code 0), 
+		 * the tree walking continues with this node. If they are not equal (return code != 1), 
+		 * the tree walking stops at this node and continues with its parent/sibling node.
+		 */
+		@Override
+		int compare(N masterNode, N slaveNode);
+		
 	}
 
 }
