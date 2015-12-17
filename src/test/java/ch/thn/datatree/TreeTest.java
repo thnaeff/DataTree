@@ -315,6 +315,7 @@ public class TreeTest {
 		assertThat(iterationList, is(reference));
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void treeIntersectFull() throws Exception {
 		
@@ -338,10 +339,11 @@ public class TreeTest {
 		
 		//Build the intersect of the tree with itself. Testing if the whole tree ends up as intersect.
 		//This creates a copy of the tree, but it is less efficient as using the DataTreeUtil.copyTree.
-		StringBuilder listNodeOut = printer.print(DataTreeUtil.intersect(listNode, listNode, comparator));
-		StringBuilder setNodeOut = printer.print(DataTreeUtil.intersect(setNode, setNode, comparator));
-		StringBuilder keyListNodeOut = printer.print(DataTreeUtil.intersect(keyListNode, keyListNode, comparator));
-		StringBuilder keySetNodeOut = printer.print(DataTreeUtil.intersect(keySetNode, keySetNode, comparator));
+		//Only print the master tree.
+		StringBuilder listNodeOut = printer.print(DataTreeUtil.intersect(listNode, listNode, comparator).masterNode);
+		StringBuilder setNodeOut = printer.print(DataTreeUtil.intersect(setNode, setNode, comparator).masterNode);
+		StringBuilder keyListNodeOut = printer.print(DataTreeUtil.intersect(keyListNode, keyListNode, comparator).masterNode);
+		StringBuilder keySetNodeOut = printer.print(DataTreeUtil.intersect(keySetNode, keySetNode, comparator).masterNode);
 		
 		String reference = "Tree" + PlainTextTreePrinter.LINE_SEPARATOR 
 				+ "├─ Child 1" + PlainTextTreePrinter.LINE_SEPARATOR 
@@ -422,10 +424,10 @@ public class TreeTest {
 		
 		TestIntersectComparator comparator = new TestIntersectComparator();
 		
-		StringBuilder listNodeOut = printer.print(DataTreeUtil.intersect(listNode, listNodeSlave, comparator));
-		StringBuilder setNodeOut = printer.print(DataTreeUtil.intersect(setNode, setNodeSlave, comparator));
-		StringBuilder keyListNodeOut = printer.print(DataTreeUtil.intersect(keyListNode, keyListNodeSlave, comparator));
-		StringBuilder keySetNodeOut = printer.print(DataTreeUtil.intersect(keySetNode, keySetNodeSlave, comparator));
+		StringBuilder listNodeOut = printer.print(DataTreeUtil.intersect(listNode, listNodeSlave, comparator).masterNode);
+		StringBuilder setNodeOut = printer.print(DataTreeUtil.intersect(setNode, setNodeSlave, comparator).masterNode);
+		StringBuilder keyListNodeOut = printer.print(DataTreeUtil.intersect(keyListNode, keyListNodeSlave, comparator).masterNode);
+		StringBuilder keySetNodeOut = printer.print(DataTreeUtil.intersect(keySetNode, keySetNodeSlave, comparator).masterNode);
 		
 		String reference = "Tree" + PlainTextTreePrinter.LINE_SEPARATOR 
 				+ "├─ Child 1" + PlainTextTreePrinter.LINE_SEPARATOR 

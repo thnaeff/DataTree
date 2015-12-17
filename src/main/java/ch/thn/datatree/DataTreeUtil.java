@@ -135,14 +135,14 @@ public class DataTreeUtil {
 	 * Builds the intersect of two trees. 
 	 * The given {@link TreeIntersectComparator} does the comparison between two nodes and decides if they are equal 
 	 * or not. 
-	 * The resulting tree is a copy of the master tree (using the node factory methods of the master tree)
+	 * The resulting object contains a copy of the master and the slave tree, wit only the intersection nodes.
 	 * 
 	 * @param masterNode
 	 * @param slaveNode
 	 * @param walker
 	 * @return
 	 */
-	public static <N extends CollectionTreeNodeInterface<?, N>> N intersect(N masterNode, N slaveNode, 
+	public static <N extends CollectionTreeNodeInterface<?, N>> TreeIntersectResult<N> intersect(N masterNode, N slaveNode, 
 			TreeIntersectComparator<N> walker) {
 		
 		if (walker.compare(masterNode, slaveNode) != 0) {
@@ -150,11 +150,16 @@ public class DataTreeUtil {
 			return null;
 		}
 		
-		N intersectTree = masterNode.nodeFactory(masterNode);
+		N intersectTreeMaster = masterNode.nodeFactory(masterNode);
+		N intersectTreeSlave = masterNode.nodeFactory(masterNode);
 		
-		intersectChildren(masterNode, slaveNode, walker, intersectTree);
+		intersectChildren(masterNode, slaveNode, walker, intersectTreeMaster, intersectTreeSlave);
 		
-		return intersectTree;
+		TreeIntersectResult<N> result = new TreeIntersectResult<N>();
+		result.masterNode = intersectTreeMaster;
+		result.slaveTree = intersectTreeSlave;
+		
+		return result;
 	}
 	
 	/**
@@ -163,15 +168,17 @@ public class DataTreeUtil {
 	 * @param masterNode
 	 * @param slaveNode
 	 * @param walker
-	 * @param intersectTree
+	 * @param intersectTreeMaster
+	 * @param intersectTreeSlave
 	 */
-	private static <K, N extends CollectionTreeNodeInterface<?, N>> void intersectChildren(N masterNode, N slaveNode, 
-			TreeIntersectComparator<N> walker, N intersectTree) {
+	private static <K, N extends CollectionTreeNodeInterface<?, N>> void intersectChildren(
+			N masterNode, N slaveNode, TreeIntersectComparator<N> walker, 
+			N intersectTreeMaster, N intersectTreeSlave) {
 		
 		Collection<N> masterChildNodes = masterNode.getChildNodes();
 		Collection<N> slaveChildNodes = slaveNode.getChildNodes();
 		
-		Collection<N> intersectChildNodes = intersectTree.getChildNodes();
+		Collection<N> intersectChildNodes = intersectTreeMaster.getChildNodes();
 		
 		//Compare each master node to each child node
 		for (N masterChildNode : masterChildNodes) {
@@ -187,8 +194,9 @@ public class DataTreeUtil {
 					}
 					
 					if (! alreadyAdded) {
-						N intersectChildTree = intersectTree.addChildNode(masterChildNode.nodeFactory(masterChildNode));
-						intersectChildren(masterChildNode, slaveChildNode, walker, intersectChildTree);
+						N intersectChildTreeMaster = intersectTreeMaster.addChildNode(masterChildNode.nodeFactory(masterChildNode));
+						N intersectChildTreeSlave = intersectTreeSlave.addChildNode(slaveChildNode.nodeFactory(slaveChildNode));
+						intersectChildren(masterChildNode, slaveChildNode, walker, intersectChildTreeMaster, intersectChildTreeSlave);
 					}
 				}
 			}
@@ -330,6 +338,17 @@ public class DataTreeUtil {
 		@Override
 		int compare(N masterNode, N slaveNode);
 		
+	}
+	
+	/************************************************************************************************************
+	 * 
+	 * @author Thomas Naeff (github.com/thnaeff)
+	 *
+	 * @param <N>
+	 */
+	public static class TreeIntersectResult<N extends CollectionTreeNodeInterface<?, N>> {
+		public N masterNode = null;
+		public N slaveTree = null;
 	}
 
 }
