@@ -79,13 +79,16 @@ public class TreeTest2 {
 		//Same key multiple times
 		
 		keyListNode.addChildNode("key1", "Value1");
-		keyListNode.addChildNode("key1", "Value2");
+		keyListNode.addChildNode("key2", "Value2");
+		//Key-value pair is added twice, because this tree is backed by a list
+		keyListNode.addChildNode("key2", "Value2");
+		
 		
 		keySetNode.addChildNode("key1", "Value1");
-		keySetNode.addChildNode("key1", "Value2");
+		keySetNode.addChildNode("key2", "Value2");
 		//Same key-value combination. Because this tree is backed by a set, 
 		//the default comparator will prevent it from being added
-		keySetNode.addChildNode("key1", "Value2");
+		keySetNode.addChildNode("key2", "Value2");
 		
 		
 		
@@ -95,13 +98,20 @@ public class TreeTest2 {
 		StringBuilder keySetNodeOut = printer.print(keySetNode);
 		
 		
-		String reference = "Tree" + PlainTextTreePrinter.LINE_SEPARATOR 
+		String referenceList = "Tree" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "├─ Value1" + PlainTextTreePrinter.LINE_SEPARATOR 
+				+ "├─ Value2" + PlainTextTreePrinter.LINE_SEPARATOR
+				+ "└─ Value2" + PlainTextTreePrinter.LINE_SEPARATOR;
+		
+		String referenceSet = "Tree" + PlainTextTreePrinter.LINE_SEPARATOR 
 				+ "├─ Value1" + PlainTextTreePrinter.LINE_SEPARATOR 
 				+ "└─ Value2" + PlainTextTreePrinter.LINE_SEPARATOR;
 		
 		
-		System.out.println("-- Reference tree -------------------------------------");
-		System.out.println(reference);
+		System.out.println("-- Reference tree list -------------------------------------");
+		System.out.println(referenceList);
+		System.out.println("-- Reference tree set -------------------------------------");
+		System.out.println(referenceSet);
 		System.out.println("--- Key list tree ------------------------------------");
 		System.out.println(keyListNodeOut);
 		System.out.println("--- Key set tree ------------------------------------");
@@ -109,11 +119,9 @@ public class TreeTest2 {
 		
 		
 		//Check that all the printed trees match the reference
-		assertThat(keyListNodeOut.toString(), is(equalTo(reference)));
-		assertThat(keySetNodeOut.toString(), is(equalTo(reference)));
+		assertThat(keyListNodeOut.toString(), is(equalTo(referenceList)));
+		assertThat(keySetNodeOut.toString(), is(equalTo(referenceSet)));
 		
 	}
-
-	
 	
 }
