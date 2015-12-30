@@ -69,7 +69,6 @@ implements ListTreeNodeInterface<V, N> {
 		return addChildNodeAt(index, node.nodeFactory(node));
 	}
 
-	@Override
 	public boolean addChildNodesAt(int index, Collection<N> nodes) {
 		return internalGetChildren().addAll(index, nodes);
 	}

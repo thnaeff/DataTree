@@ -41,13 +41,15 @@ import java.util.List;
 public abstract class GenericTreePrinter<N, V, O, R> {
 
 	/**
-	 * Prints the tree, starting at the given node. This method creates the output
-	 * of one single node (one node can have multiple lines).
+	 * Prints the tree, starting at the given node. 
 	 * 
 	 * @param node The node to start printing from
 	 * @return
 	 */
 	public O print(N node) {
+		if (node == null) {
+			return null;
+		}
 
 		Collection<N> children = getChildren(node);
 		int size = (children == null ? 0 : children.size());

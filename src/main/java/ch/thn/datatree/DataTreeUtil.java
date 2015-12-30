@@ -134,20 +134,26 @@ public class DataTreeUtil {
 	}
 	
 	/**
-	 * Builds the intersect of two trees. 
-	 * The given {@link TreeIntersectProcessor} does the comparison between two nodes and decides if they are equal 
-	 * or not. The processor also creates the instances for the resulting intersect tree.
+	 * Walks two trees in parallel and (optional) builds the intersect between the two trees. 
+	 * The given {@link TreeIntersectProcessor} does the comparison between two nodes 
+	 * and decides if they are equal or not. The processor also creates the instances 
+	 * for the resulting intersect tree or simply can be used to do anything else with 
+	 * the two matching nodes.
 	 * 
 	 * @param masterTree
-	 * @param slaveNode
-	 * @param processor
+	 * @param slaveNode The tree to compare against
+	 * @param processor The processor which defined equality and creates nodes of the 
+	 * possible resulting tree
+	 * @param preventDuplicates If set to <code>true</code>, once a slave node is considered 
+	 * equal once it is not compared to the master node again. If set to <code>false</code>, 
+	 * all slave nodes are compared to each master node.
 	 * @return 
 	 */
 	public static <N1 extends CollectionTreeNodeInterface<?, N1>, 
 					N2 extends CollectionTreeNodeInterface<?, N2>, 
 					N3 extends CollectionTreeNodeInterface<?, N3>> 
 			N3 intersect(N1 masterTree, N2 slaveTree, 
-			TreeIntersectProcessor<N1, N2, N3> processor) {
+			TreeIntersectProcessor<N1, N2, N3> processor, boolean preventDuplicates) {
 		
 		if (! processor.equals(masterTree, slaveTree)) {
 			//The head nodes are already not equal.
@@ -157,7 +163,8 @@ public class DataTreeUtil {
 		N3 intersectTree = processor.intersectNode(masterTree, slaveTree);
 	
 		
-		intersectChildren(masterTree, slaveTree, processor, intersectTree);
+		intersectChildren(masterTree, slaveTree, processor, 
+				intersectTree, preventDuplicates);
 		
 		return intersectTree;
 	}
@@ -168,8 +175,8 @@ public class DataTreeUtil {
 	 * @param masterNode
 	 * @param slaveNode
 	 * @param processor
-	 * @param intersectTreeMaster
-	 * @param intersectTreeSlave
+	 * @param intersectTree
+	 * @param preventDuplicates
 	 */
 	private static <K, 
 					N1 extends CollectionTreeNodeInterface<?, N1>, 
@@ -177,27 +184,37 @@ public class DataTreeUtil {
 					N3 extends CollectionTreeNodeInterface<?, N3>> 
 		void intersectChildren(
 			N1 masterNode, N2 slaveNode, TreeIntersectProcessor<N1, N2, N3> processor, 
-			N3 intersectTree) {
+			N3 intersectTree, boolean preventDuplicates) {
 		
 		Collection<N1> masterChildNodes = masterNode.getChildNodes();
 		Collection<N2> slaveChildNodes = slaveNode.getChildNodes();
-				
-		Set<N2> copiedSlaveNodes = new HashSet<N2>();
+	
+		//Do not keep a list of added nodes if duplicates should not be ignored
+		Set<N2> copiedSlaveNodes = (preventDuplicates ? new HashSet<N2>() : null);
 		
 		//Compare each master node to each child node
 		for (N1 masterChildNode : masterChildNodes) {
 			for (N2 slaveChildNode : slaveChildNodes) {
 				//Make sure a node of the slave tree is only considered once
-				if (copiedSlaveNodes.contains(slaveChildNode)) {
+				if (copiedSlaveNodes != null && copiedSlaveNodes.contains(slaveChildNode)) {
 					continue;
 				}
 				
 				if (processor.equals(masterChildNode, slaveChildNode)) {
 					
-					copiedSlaveNodes.add(slaveChildNode);
+					if (copiedSlaveNodes != null) {
+						copiedSlaveNodes.add(slaveChildNode);
+					}
 					
-					N3 intersectChildTree = intersectTree.addChildNode(processor.intersectNode(masterChildNode, slaveChildNode));
-					intersectChildren(masterChildNode, slaveChildNode, processor, intersectChildTree);
+					N3 intersectChildTree = null;
+					//The resulting intersect tree can be null if the intersectNode method does not 
+					//return a tree node (e.g. the master and/or slave tree is only modified).
+					if (intersectTree != null) {
+						intersectChildTree = intersectTree.addChildNode(processor.intersectNode(masterChildNode, slaveChildNode));
+					}
+					
+					intersectChildren(masterChildNode, slaveChildNode, processor, 
+							intersectChildTree, preventDuplicates);
 				
 				}
 			}
@@ -344,7 +361,9 @@ public class DataTreeUtil {
 		public boolean equals(N1 masterNode, N2 slaveNode);
 		
 		/**
-		 * Builds the node for the resulting intersect tree
+		 * Gets called for all nodes which match in both trees. The implementation of this 
+		 * method builds the node for the resulting intersect tree, and/or modifies visited 
+		 * nodes.
 		 * 
 		 * @param masterNode
 		 * @param slaveNode

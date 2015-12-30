@@ -17,7 +17,6 @@
 package ch.thn.datatree.core;
 
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -86,16 +85,22 @@ implements ListTreeNodeInterface<V, N> {
 		//Just clear the map, don't disconnect any children from their parent
 		internalGetMap().clear();
 
-		int count = 0;
-		for (N value : values) {
-			if (count == index) {
-				//Add the new node at its position
-				internalGetMap().put(node.getNodeKey(), node);
-				node.internalSetParentNode(internalGetThis());
+		if (values.size() > 0) {
+			int count = 0;
+			for (N value : values) {
+				if (count == index) {
+					//Add the new node at its position
+					internalGetMap().put(node.getNodeKey(), node);
+					node.internalSetParentNode(internalGetThis());
+				}
+	
+				internalGetMap().put(value.getNodeKey(), value);
+				count++;
 			}
-
-			internalGetMap().put(value.getNodeKey(), value);
-			count++;
+		} else {
+			//Map is empty. Index is the first position -> just add new node
+			internalGetMap().put(node.getNodeKey(), node);
+			node.internalSetParentNode(internalGetThis());
 		}
 
 		fireNodeAdded(node);
@@ -116,18 +121,19 @@ implements ListTreeNodeInterface<V, N> {
 	 * @return
 	 */
 	public N getChildNode(K key, int index) {
-		return internalGetChildren(key).get(index);
+		List<N> list = internalGetChildren(key);
+		
+		if (list == null || index >= list.size()) {
+			return null;
+		}
+		
+		return list.get(index);
 	}
 
 
 	@Override
 	public N addChildNodeCopyAt(int index, N node) {
 		return addChildNodeAt(index, node.nodeFactory(node));
-	}
-
-	@Override
-	public boolean addChildNodesAt(int index, Collection<N> nodes) {
-		return internalGetChildren().addAll(index, nodes);
 	}
 
 	@Override

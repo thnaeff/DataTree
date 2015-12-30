@@ -16,7 +16,6 @@
  */
 package ch.thn.datatree.core;
 
-import java.util.Collection;
 import java.util.List;
 
 import ch.thn.datatree.ListTreeIterator;
@@ -53,15 +52,6 @@ extends CollectionTreeNodeInterface<V, N> {
 	 * @return
 	 */
 	public N addChildNodeCopyAt(int index, N node);
-
-	/**
-	 * 
-	 * 
-	 * @param index
-	 * @param nodes
-	 * @return
-	 */
-	public boolean addChildNodesAt(int index, Collection<N> nodes);
 
 	/**
 	 * 
