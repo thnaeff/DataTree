@@ -175,7 +175,8 @@ extends Iterable<N> {
 	public N replaceNode(V value);
 
 	/**
-	 * Replaces this node with the given node
+	 * Replaces this node with the new node. The new node will take the place of this 
+	 * node, all children of this node will be transfered to the new node.
 	 * 
 	 * @param newNode
 	 * @return

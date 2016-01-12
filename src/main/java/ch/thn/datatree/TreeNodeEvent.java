@@ -33,61 +33,43 @@ public class TreeNodeEvent<N extends CollectionTreeNodeInterface<?, N>> extends 
 	private static final long serialVersionUID = -7895991400838880597L;
 
 	private N node = null;
-	private N oldNode = null;
-	private N parentOfRemoved = null;
+	private N parent = null;
 
-	private int nodeIndexOfRemoved = 0;
-
-	/**
-	 * 
-	 * 
-	 * @param source The source node
-	 * @param nodes Affected node
-	 */
-	public TreeNodeEvent(N source, N node) {
-		this(source, node, null, null, -1);
-	}
+	private int nodeIndex = 0;
+	private Object oldValue = null;
 
 	/**
 	 * 
 	 * 
-	 * @param source The source node
-	 * @param node Affected node
-	 * @param parentOfRemoved The parent node of the affected node. This is mainly needed
-	 * for when a node is removed so that its parent can be accessed to determine
-	 * the former location.
-	 * @param nodeIndexOfRemoved The node index of the affected node. This is mainly needed
-	 * for when a node is removed so that its position can be accessed to determine
-	 * the former location.
+	 * @param source
+	 * @param node
+	 * @param parent The parent node of the <code>node</code> parameter. If the node has been 
+	 * removed from a tree, this parent is the former parent.
+	 * @param nodeIndex The index among its siblings of <code>node</code> parameter. If the node 
+	 * has been removed from a tree, this index is the former index.
+	 * @param oldValue
 	 */
-	public TreeNodeEvent(N source, N node, N parentOfRemoved, int nodeIndexOfRemoved) {
-		this(source, node, null, parentOfRemoved, nodeIndexOfRemoved);
-	}
-
-	/**
-	 * For {@link TreeNodeListener#nodeReplaced(TreeNodeEvent)} events
-	 * 
-	 * @param source The source node
-	 * @param node Affected node
-	 * @param oldNode The old node
-	 * @param parentOfRemoved The parent node of the affected node. This is mainly needed
-	 * for when a node is removed so that its parent can be accessed to determine
-	 * the former location.
-	 * @param nodeIndexOfRemoved The node index of the affected node. This is mainly needed
-	 * for when a node is removed so that its position can be accessed to determine
-	 * the former location.
-	 */
-	public TreeNodeEvent(N source, N node, N oldNode, N parentOfRemoved, int nodeIndexOfRemoved) {
+	public TreeNodeEvent(N source, N node, N parent, int nodeIndex, Object oldValue) {
 		super(source);
 		this.node = node;
-		this.oldNode = oldNode;
-		this.parentOfRemoved = parentOfRemoved;
-		this.nodeIndexOfRemoved = nodeIndexOfRemoved;
+		this.parent = parent;
+		this.nodeIndex = nodeIndex;
+		this.oldValue = oldValue;
+	}
+	
+	/**
+	 * The node which caused the event. E.g. the node to which a child node has been added to 
+	 * or the node of which a child node has been removed from.
+	 * 
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public N getSourceNode() {
+		return (N) getSource();
 	}
 
 	/**
-	 * Returns the affected node (if a single node was affected, <code>null</code> if
-	 * no node or multiple nodes are affected).<br />
+	 * Returns the affected node, e.g. the node which has been removed, added, ...
 	 * 
 	 * @return
 	 */
@@ -96,39 +78,34 @@ public class TreeNodeEvent<N extends CollectionTreeNodeInterface<?, N>> extends 
 	}
 
 	/**
-	 * If the event is {@link TreeNodeListener#nodeReplaced(TreeNodeEvent)},
-	 * this method returns the node which was in place previously. Use
-	 * {@link #getNodes()} to get the new node which has been put in place for the
-	 * old one.
+	 * Returns the parent node of the affected node (the parent node of the node which is returned 
+	 * when calling {@link #getNode()}). For a node which is in a tree, this is just its parent node. 
+	 * For a node which has been removed from a tree, this is its former parent node.
 	 * 
 	 * @return
 	 */
-	public N getOldNode() {
-		return oldNode;
+	public N getParentNode() {
+		return parent;
 	}
-
+	
 	/**
-	 * Returns the parent node of the node which has been removed.<br />
-	 * <br />
-	 * If this is a node removed/replaced event, the returned parent is the former parent
-	 * before the node was removed.
+	 * The index among its siblings of the affected node (the index of the node which is returned 
+	 * when calling {@link #getNode()}). For a node which is in a tree, this is just its node index. 
+	 * For a node which has been removed from a tree, this is its former node index.
 	 * 
 	 * @return
 	 */
-	public N getParentNodeOfRemoved() {
-		return parentOfRemoved;
+	public int getNodeIndex() {
+		return nodeIndex;
 	}
-
+	
 	/**
-	 * Returns the node index of the source node which has been removed.<br />
-	 * <br />
-	 * If this is a node removed/replaced event, the returned index is the former index
-	 * before the node was removed.
+	 * For value change events, this returns the value before the change.
 	 * 
 	 * @return
 	 */
-	public int getNodeIndexOfRemoved() {
-		return nodeIndexOfRemoved;
+	public Object getOldValue() {
+		return oldValue;
 	}
 
 

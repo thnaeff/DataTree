@@ -24,6 +24,7 @@ import java.util.Set;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 
+
 /**
  * 
  * 
@@ -139,10 +140,10 @@ implements MapTreeNodeInterface<K, V, N> {
 	@Override
 	protected N internalAddChildNode(N node, boolean notify) {
 		map.put(node.getNodeKey(), node);
-		node.internalSetParentNode(internalGetThis());
+		node.internalSetParentNode(internalGetThis(), true);
 
 		if (notify) {
-			fireNodeAdded(node);
+			fireNodeEvent(TreeEventType.CHILD_ADDED, node, internalGetThis(), node.getNodeIndex(), null);
 		}
 
 		return node;
@@ -156,9 +157,11 @@ implements MapTreeNodeInterface<K, V, N> {
 	@Override
 	public N addChildNode(K key, V value) {
 		N node = nodeFactory(key, value);
-		node.internalSetParentNode(internalGetThis());
+		node.internalSetParentNode(internalGetThis(), true);
 		map.put(key, node);
-		fireNodeAdded(node);
+		
+		fireNodeEvent(TreeEventType.CHILD_ADDED, node, internalGetThis(), node.getNodeIndex(), null);
+		
 		return node;
 	}
 
@@ -180,8 +183,9 @@ implements MapTreeNodeInterface<K, V, N> {
 	public boolean addChildNodes(Multimap<K, N> nodes) {
 		if (map.putAll(nodes)) {
 			for (N node : nodes.values()) {
-				node.internalSetParentNode(internalGetThis());
-				fireNodeAdded(node);
+				node.internalSetParentNode(internalGetThis(), true);
+				
+				fireNodeEvent(TreeEventType.CHILD_ADDED, node, internalGetThis(), node.getNodeIndex(), null);
 			}
 
 			return true;
@@ -192,35 +196,34 @@ implements MapTreeNodeInterface<K, V, N> {
 
 	@Override
 	public Collection<N> removeChildNodes(K key) {
-		for (N node : map.get(key)) {
-			node.preserveNodeInfo();
-		}
-
 		//The removed children might or might not be in an ordered list. Create an
 		//ordered list here in whatever order the children are.
-		ArrayList<N> tempChildren = new ArrayList<N>(map.removeAll(key));
+		ArrayList<N> tempChildren = new ArrayList<N>(map.get(key));
 
 		//Remove children in reverse order with the last one first.
 		//This is important because when removing
 		//the first child, the indexes of all the following children change.
 		for (int i = tempChildren.size() - 1; i >= 0; i--) {
 			N node = tempChildren.get(i);
-			node.internalSetParentNode(null);
-			fireNodeRemoved(node);
+			int oldIndex = node.getNodeIndex();
+			node.internalSetParentNode(null, true);
+			
+			fireNodeEvent(TreeEventType.CHILD_REMOVED, node, internalGetThis(), oldIndex, null);
 		}
+		
+		map.removeAll(key);
 
 		return tempChildren;
 	}
 
 	@Override
 	public boolean removeChildNode(K key, N node) {
-		node.preserveNodeInfo();
-
+		int oldIndex = node.getNodeIndex();
 		boolean ret = map.remove(key, node);
 
-		node.internalSetParentNode(null);
+		node.internalSetParentNode(null, true);
 
-		fireNodeRemoved(node);
+		fireNodeEvent(TreeEventType.CHILD_REMOVED, node, internalGetThis(), oldIndex, null);
 
 		return ret;
 	}

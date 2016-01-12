@@ -36,8 +36,6 @@ public abstract class GenericListTreeNode<V, N extends GenericListTreeNode<V, N>
 extends GenericCollectionTreeNode<V, N, List<N>>
 implements ListTreeNodeInterface<V, N> {
 
-	private int formerNodeIndex = -1;
-
 	/**
 	 * 
 	 * @param value
@@ -60,7 +58,10 @@ implements ListTreeNodeInterface<V, N> {
 
 		//Throws an index out of bounds exception if the given index is not valid
 		internalGetChildren().add(index, node);
-		node.internalSetParentNode(internalGetThis());
+		node.internalSetParentNode(internalGetThis(), true);
+		
+		fireNodeEvent(TreeEventType.CHILD_ADDED, node, internalGetThis(), node.getNodeIndex(), null);
+		
 		return node;
 	}
 
@@ -144,14 +145,12 @@ implements ListTreeNodeInterface<V, N> {
 			return null;
 		}
 
-		node.preserveNodeInfo();
-
 		internalGetChildren().remove(index);
 
 		//Disconnect child from its parent node
-		node.internalSetParentNode(null);
+		node.internalSetParentNode(null, true);
 
-		fireNodeRemoved(node);
+		fireNodeEvent(TreeEventType.CHILD_REMOVED, node, internalGetThis(), index, null);
 
 		return node;
 	}
@@ -170,25 +169,7 @@ implements ListTreeNodeInterface<V, N> {
 	public void removeChildNodes() {
 		super.removeChildNodes();
 	}
-
-	@Override
-	protected void preserveNodeInfo() {
-		super.preserveNodeInfo();
-		formerNodeIndex = getNodeIndex();
-	}
-
-	/**
-	 * The index of this node before the node has been removed from a tree. <br />
-	 * This index is only valid immediately after a node has been removed! The index
-	 * is not reset when the node is re-added to a tree.
-	 * 
-	 * @return
-	 */
-	@Override
-	protected int getFormerNodeIndex() {
-		return formerNodeIndex;
-	}
-
+	
 	@Override
 	public int getNodeIndex() {
 		if (getParentNode() == null) {

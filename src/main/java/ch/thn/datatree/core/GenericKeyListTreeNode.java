@@ -35,12 +35,6 @@ extends GenericMapTreeNode<K, V, N, List<N>>
 implements ListTreeNodeInterface<V, N> {
 
 	/**
-	 * The node index before the node got deleted. Needed for JTree TreeModel for example
-	 * to notify which node has been removed.
-	 */
-	private int formerNodeIndex = -1;
-
-	/**
 	 * 
 	 * 
 	 * @param key
@@ -91,7 +85,7 @@ implements ListTreeNodeInterface<V, N> {
 				if (count == index) {
 					//Add the new node at its position
 					internalGetMap().put(node.getNodeKey(), node);
-					node.internalSetParentNode(internalGetThis());
+					node.internalSetParentNode(internalGetThis(), true);
 				}
 	
 				internalGetMap().put(value.getNodeKey(), value);
@@ -100,10 +94,10 @@ implements ListTreeNodeInterface<V, N> {
 		} else {
 			//Map is empty. Index is the first position -> just add new node
 			internalGetMap().put(node.getNodeKey(), node);
-			node.internalSetParentNode(internalGetThis());
+			node.internalSetParentNode(internalGetThis(), true);
 		}
 
-		fireNodeAdded(node);
+		fireNodeEvent(TreeEventType.CHILD_ADDED, node, internalGetThis(), node.getNodeIndex(), null);
 
 		return node;
 	}
@@ -206,15 +200,13 @@ implements ListTreeNodeInterface<V, N> {
 		if (node == null) {
 			return null;
 		}
-
-		node.preserveNodeInfo();
-
+		
 		internalGetChildren().remove(index);
 
 		//Disconnect child from its parent node
-		node.internalSetParentNode(null);
+		node.internalSetParentNode(null, true);
 
-		fireNodeRemoved(node);
+		fireNodeEvent(TreeEventType.CHILD_REMOVED, node, internalGetThis(), index, null);
 
 		return node;
 	}
@@ -232,24 +224,6 @@ implements ListTreeNodeInterface<V, N> {
 	@Override
 	public void removeChildNodes() {
 		super.removeChildNodes();
-	}
-
-	@Override
-	protected void preserveNodeInfo() {
-		super.preserveNodeInfo();
-		formerNodeIndex = getNodeIndex();
-	}
-
-	/**
-	 * The index of this node before the node has been removed from a tree. <br />
-	 * This index is only valid immediately after a node has been removed! The index
-	 * is not reset when the node is re-added to a tree.
-	 * 
-	 * @return
-	 */
-	@Override
-	protected int getFormerNodeIndex() {
-		return formerNodeIndex;
 	}
 
 	@Override

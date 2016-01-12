@@ -39,13 +39,37 @@ public abstract class GenericCollectionTreeNode<V, N extends GenericCollectionTr
 implements CollectionTreeNodeInterface<V, N>, Iterable<N>  {
 
 	private C children = null;
-
 	private N parent = null;
-	private N formerParent = null;
-
 	private V value = null;
 
 	private Set<TreeNodeListener<N>> listeners = null;
+	
+	protected enum TreeEventType {
+		/**
+		 * 
+		 */
+		CHILD_ADDED, 
+		
+		/**
+		 * 
+		 */
+		CHILD_REMOVED, 
+		
+		/**
+		 * 
+		 */
+		VALUE_CHANGED, 
+		
+		/**
+		 * 
+		 */
+		ADDED, 
+		
+		/**
+		 * 
+		 */
+		REMOVED;
+	}
 
 	/**
 	 * 
@@ -75,6 +99,15 @@ implements CollectionTreeNodeInterface<V, N>, Iterable<N>  {
 	protected C internalGetChildren() {
 		return children;
 	}
+	
+	/**
+	 * A dummy method for {@link TreeNodeListener}s
+	 * 
+	 * @return
+	 */
+	protected int getNodeIndex() {
+		return -1;
+	}
 
 	/**
 	 * 
@@ -89,8 +122,9 @@ implements CollectionTreeNodeInterface<V, N>, Iterable<N>  {
 	 * <i><b>For internal use only!</b></i>
 	 * 
 	 * @param parent
+	 * @param notify
 	 */
-	protected void internalSetParentNode(N parent) {
+	protected void internalSetParentNode(N parent, boolean notify) {
 		this.parent = parent;
 	}
 
@@ -104,66 +138,47 @@ implements CollectionTreeNodeInterface<V, N>, Iterable<N>  {
 	public void removeTreeNodeListener(TreeNodeListener<N> l) {
 		listeners.remove(l);
 	}
-
+	
 	/**
-	 * <b>Note:</b> This is a dummy method, since a general collection does not
-	 * have an index. It exists here for firing listeners. It has to be overridden
-	 * in any list tree node.<br />
-	 * <br />
-	 * The index of this node before the node has been removed from a tree. <br />
-	 * This index is only valid immediately after a node has been removed! The index
-	 * is not reset when the node is re-added to a tree.
+	 * Fire event listeners
 	 * 
-	 * @return
+	 * @param eventType
+	 * @param node
+	 * @param parent
+	 * @param nodeIndex
+	 * @param oldValue
 	 */
-	protected int getFormerNodeIndex() {
-		return -1;
-	}
-
-	/**
-	 * Fire listeners for removed single node
-	 * 
-	 * @param removed
-	 */
-	protected void fireNodeRemoved(N removed) {
+	protected void fireNodeEvent(TreeEventType eventType, 
+			N node, N parent, int nodeIndex, Object oldValue) {
+		
+		TreeNodeEvent<N> e = new TreeNodeEvent<N>(internalGetThis(), node, parent, nodeIndex, oldValue);
+		
 		for (TreeNodeListener<N> l : listeners) {
-			l.nodeRemoved(new TreeNodeEvent<N>(internalGetThis(), removed, removed.getFormerParentNode(), removed.getFormerNodeIndex()));
+			switch (eventType) {
+			case CHILD_ADDED:
+				l.childNodeAdded(e);
+				//Also send a notification from the view of the added node
+				node.fireNodeEvent(TreeEventType.ADDED, node, internalGetThis(), nodeIndex, null);
+				break;
+			case CHILD_REMOVED:
+				l.childNodeRemoved(e);
+				//Also send a notification from the view of the removed node
+				node.fireNodeEvent(TreeEventType.REMOVED, node, internalGetThis(), nodeIndex, null);
+				break;
+			case VALUE_CHANGED:
+				l.nodeValueChanged(e);
+				break;
+			case ADDED:
+				l.addedToTree(e);
+				break;
+			case REMOVED:
+				l.removedFromTree(e);
+				break;
+			default:
+				break;
+			}
 		}
-	}
-
-	/**
-	 * Fire listeners for added single node
-	 * 
-	 * @param added
-	 */
-	protected void fireNodeAdded(N added) {
-		for (TreeNodeListener<N> l : listeners) {
-			l.nodeAdded(new TreeNodeEvent<N>(internalGetThis(), added));
-		}
-	}
-
-	/**
-	 * Fire listeners for replaced node
-	 * 
-	 * @param oldNode
-	 * @param newNode
-	 */
-	private void fireNodeReplaced(N newNode) {
-		for (TreeNodeListener<N> l : listeners) {
-			//The current node is the old node
-			l.nodeReplaced(new TreeNodeEvent<N>(internalGetThis(), newNode, internalGetThis(), getFormerParentNode(), getFormerNodeIndex()));
-		}
-	}
-
-	/**
-	 * Fire listeners for value change in node
-	 * 
-	 * @param changed
-	 */
-	protected void fireNodeValueChanged(N changed) {
-		for (TreeNodeListener<N> l : listeners) {
-			l.nodeValueChanged(new TreeNodeEvent<N>(internalGetThis(), changed));
-		}
+		
 	}
 
 
@@ -186,10 +201,10 @@ implements CollectionTreeNodeInterface<V, N>, Iterable<N>  {
 		}
 
 		if (children.add(node)) {
-			node.internalSetParentNode(internalGetThis());
+			node.internalSetParentNode(internalGetThis(), true);
 
 			if (notify) {
-				fireNodeAdded(node);
+				fireNodeEvent(TreeEventType.CHILD_ADDED, node, internalGetThis(), node.getNodeIndex(), null);
 			}
 
 			return node;
@@ -217,12 +232,6 @@ implements CollectionTreeNodeInterface<V, N>, Iterable<N>  {
 
 	@Override
 	public void removeChildNodes() {
-		//Preserve node info here, because internalRemoveChildNodes can not
-		//do it because it is used in switchNodes.
-		for (N node : children) {
-			node.preserveNodeInfo();
-		}
-
 		internalRemoveChildNodes(true);
 	}
 
@@ -242,26 +251,6 @@ implements CollectionTreeNodeInterface<V, N>, Iterable<N>  {
 		for (int i = tempChildren.size() - 1; i >= 0; i--) {
 			internalRemoveChildNode(tempChildren.get(i), notify);
 		}
-	}
-
-	/**
-	 * Preserves node information so that the position of this node can be
-	 * determined after the node has been removed.
-	 * 
-	 */
-	protected void preserveNodeInfo() {
-		formerParent = getParentNode();
-	}
-
-	/**
-	 * The parent of this node before the node has been removed from a tree. <br />
-	 * This value is only valid immediately after a node has been removed! The parent
-	 * is not reset when the node is re-added to a tree.
-	 * 
-	 * @return
-	 */
-	protected N getFormerParentNode() {
-		return formerParent;
 	}
 
 	@Override
@@ -290,8 +279,9 @@ implements CollectionTreeNodeInterface<V, N>, Iterable<N>  {
 
 	@Override
 	public void setNodeValue(V value) {
+		Object oldValue = this.value;
 		this.value = value;
-		fireNodeValueChanged(internalGetThis());
+		fireNodeEvent(TreeEventType.VALUE_CHANGED, internalGetThis(), this.getParentNode(), this.getNodeIndex(), oldValue);
 	}
 
 	@Override
@@ -310,7 +300,6 @@ implements CollectionTreeNodeInterface<V, N>, Iterable<N>  {
 
 	@Override
 	public boolean removeChildNode(N node) {
-		node.preserveNodeInfo();
 		return internalRemoveChildNode(node, true);
 	}
 
@@ -321,12 +310,13 @@ implements CollectionTreeNodeInterface<V, N>, Iterable<N>  {
 	 * @return
 	 */
 	protected boolean internalRemoveChildNode(N node, boolean notify) {
-		node.internalSetParentNode(null);
+		int oldIndex = node.getNodeIndex();
+		node.internalSetParentNode(null, true);
 
 		boolean ret = children.remove(node);
 
 		if (notify) {
-			fireNodeRemoved(node);
+			fireNodeEvent(TreeEventType.CHILD_REMOVED, node, internalGetThis(), oldIndex, null);
 		}
 
 		return ret;
@@ -343,26 +333,31 @@ implements CollectionTreeNodeInterface<V, N>, Iterable<N>  {
 		if (isRootNode()) {
 			throw new TreeNodeError("Root node can not be replaced");
 		}
+		
+		if (newNode.getParentNode() != null) {
+			throw new TreeNodeError("The node already has a parent node set (which " +
+					"means it is from another tree)");
+		}
 
 		Collection<N> tempChildren = new ArrayList<N>(children);
+		
+		//Step 1: Transfer child nodes from current node to replacement node
 
-		removeChildNodes();
+		//Remove all child nodes
+		internalRemoveChildNodes(true);
 
 		//Transfer all child nodes to the new node
 		for (N childNode : tempChildren) {
-			//Add all child nodes to new parent.
-			newNode.addChildNode(childNode);
+			//Add all child nodes to new parent 
+			newNode.internalAddChildNode(childNode, true);
 		}
 
-		preserveNodeInfo();
-
-		//Switch nodes
+		//Step 2: Switch nodes
+		
 		if (getParentNode() != null) {
 			getParentNode().switchChildNodes(internalGetThis(), newNode);
 		}
-
-		fireNodeReplaced(newNode);
-
+		
 		return newNode;
 	}
 
@@ -373,10 +368,16 @@ implements CollectionTreeNodeInterface<V, N>, Iterable<N>  {
 	 * @param newNode
 	 */
 	protected void switchChildNodes(N oldNode, N newNode) {
+		if (newNode.getParentNode() != null) {
+			throw new TreeNodeError("The node already has a parent node set (which " +
+					"means it is from another tree)");
+		}
+		
 		ArrayList<N> tempChildren = new ArrayList<N>(children);
-
 		int index = tempChildren.indexOf(oldNode);
 
+		//Use existing method to have proper notification
+		internalRemoveChildNode(oldNode, true);
 		tempChildren.remove(index);
 		tempChildren.add(index, newNode);
 
@@ -385,6 +386,8 @@ implements CollectionTreeNodeInterface<V, N>, Iterable<N>  {
 		for (N node : tempChildren) {
 			internalAddChildNode(node, false);
 		}
+		
+		fireNodeEvent(TreeEventType.CHILD_ADDED, newNode, internalGetThis(), newNode.getNodeIndex(), null);
 
 	}
 

@@ -36,23 +36,17 @@ public interface TreeNodeListener<N extends CollectionTreeNodeInterface<?, N>> e
 	/**
 	 * Called when a child node has been removed.
 	 * 
-	 * @param e
+	 * @param e A {@link TreeNodeEvent}. The source is the node to which the child node has been 
+	 * added to. 
 	 */
-	public void nodeRemoved(TreeNodeEvent<N> e);
+	public void childNodeRemoved(TreeNodeEvent<N> e);
 
 	/**
 	 * Called when one or more child nodes have been added
 	 * 
 	 * @param e
 	 */
-	public void nodeAdded(TreeNodeEvent<N> e);
-
-	/**
-	 * Called when a child node has been replaced
-	 * 
-	 * @param e
-	 */
-	public void nodeReplaced(TreeNodeEvent<N> e);
+	public void childNodeAdded(TreeNodeEvent<N> e);
 
 	/**
 	 * Called when the value of a node changed
@@ -61,5 +55,18 @@ public interface TreeNodeListener<N extends CollectionTreeNodeInterface<?, N>> e
 	 */
 	public void nodeValueChanged(TreeNodeEvent<N> e);
 
+	/**
+	 * Called when a node is added to a tree
+	 * 
+	 * @param e
+	 */
+	public void addedToTree(TreeNodeEvent<N> e);
+	
+	/**
+	 * Called when a node is removed from a tree
+	 * 
+	 * @param e
+	 */
+	public void removedFromTree(TreeNodeEvent<N> e);
 
 }
