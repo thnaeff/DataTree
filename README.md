@@ -1,6 +1,16 @@
 # DataTree
 **A fully functional tree library which includes list, set and map trees, printers to print a tree as Text, HTML or CSV, iterators and much more**
 
+---
+
+
+[![License](http://img.shields.io/badge/License-Apache v2.0-802879.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
+[![Java Version](http://img.shields.io/badge/Java-1.6%2B-2E6CB8.svg)](https://java.com)
+[![Apache Maven ready](http://img.shields.io/badge/Apache Maven ready-3.3.9%2B-FF6804.svg)](https://maven.apache.org/)
+
+
+---
+
 
 The project is separated in four packages:
 - The base package *datatree*: These tree implementations are the main implementations to use. See the various tree implementations below.
@@ -73,4 +83,30 @@ This is a special implementation of the tree, built on top of the regular data t
 
 
 ### OnOff tree examples
+
+
+
+
+---
+
+
+<img src="http://maven.apache.org/images/maven-logo-black-on-white.png" alt="Built with Maven" width="150">
+
+This project can be built with Maven
+
+Maven command:
+```
+$ mvn clean install
+```
+
+pom.xml entry in your project:
+```
+<dependency>
+	<groupId>ch.thn</groupId>
+	<artifactId>datatree</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+</dependency>
+```
+
+---
 
